@@ -1,6 +1,17 @@
-def compression():
-    pass
-    # Входные данные представляют из себя цветные изображения типа JPEG, размера 48х48 пикселей.
+import numpy as np
+
+
+def compression(photo, heightOut, widthOut):
+    heightRatio = int(photo.shape[0] / heightOut)
+    widthRatio = int(photo.shape[1] / widthOut)
+    outputPhoto = np.zeros((heightOut, widthOut), 'uint8')
+    for i in range(0, heightOut):
+        n = i * heightRatio
+        for j in range(0, widthOut):
+            h = j * widthRatio
+            outputPhoto[i, j] = np.mean(photo[n:n + heightRatio, h:h + widthRatio])
+    del photo, i, j, h, n, heightRatio, widthRatio, heightOut, widthOut
+    return outputPhoto
 
 
 def splitIntoThreeChannels():
