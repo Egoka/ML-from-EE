@@ -14,11 +14,12 @@ def compression(photo, heightOut, widthOut):
     return outputPhoto
 
 
-def splitIntoThreeChannels():
-    pass
-    # Каждое изображение разбивается на 3 канала: красный, синий, зеленый.
-    # Таким образом получается 3 изображения размера 48х48 пикселей.
-    # Входные данные каждого конкретного значения пикселя нормализуются в диапазон от 0 до 1.
+def splitIntoThreeChannels(photo):
+    if len(photo.shape) > 2:
+        return np.array([photo[:, :, 0] / 255, photo[:, :, 1] / 255, photo[:, :, 2] / 255])
+    else:
+        return np.array([photo / 255, photo / 255, photo / 255])
+
 
 
 def strideLayer():
