@@ -40,17 +40,13 @@ def strideLayer(photo, scaleMAP, sizeArr=48, numberOfMap=1):
     return outputArr
 
 
-def subsampleLayer():
-    pass
-    # Под выборочный слой также, как и сверхточный имеет карты, но их количество совпадает с предыдущим (сверхточным) слоем.
-    # Цель слоя – уменьшение размерности карт предыдущего слоя.
-    # В процессе сканирования ядром под выборочного слоя карты предыдущего слоя,
-    # сканирующее ядро не пересекается в отличие от сверхточного слоя.
-    # Обычно, каждая карта имеет ядро размером 2x2, что позволяет уменьшить предыдущие карты сверхточного слоя в 2 раза.
-    # Вся карта признаков разделяется на ячейки 2х2 элемента, из которых выбираются максимальные по значению.
-    # В под выборочном слое применяется функция активации MaxPooling – выбор максимального.
-    #
-    # compactLayer[w,h]=localMax(rolledUpLayer)
+def subsampleLayer(photo, factor=2):
+    outputArr = np.zeros((photo.shape[0], int(photo.shape[1] / factor), int(photo.shape[1] / factor)), 'int')
+    for color in range(photo.shape[0]):
+        for n in range(0, photo.shape[1], factor):
+            for h in range(0, photo.shape[2], factor):
+                outputArr[color, int(n / factor), int(h / factor)] = np.amax(photo[color, n:n + factor, h:h + factor])
+    return outputArr
 
 
 def neuralNetwork():

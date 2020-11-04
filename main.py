@@ -11,6 +11,7 @@ def trainingList(dirPath):
         photo = ML.compression(photo, 144, 144)
         photo = ML.splitIntoThreeChannels(photo)
         photo = ML.strideLayer(photo, scaleMAP)
+        ML.subsampleLayer(photo)
         yield
 
 
