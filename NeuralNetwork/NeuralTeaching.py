@@ -21,28 +21,23 @@ def splitIntoThreeChannels(photo):
         return np.array([photo / 255, photo / 255, photo / 255])
 
 
-
-def strideLayer():
-    pass
-    # Сверхточный слой представляет из себя набор карт, у каждой карты есть синаптическое ядро.
-    # Количество карт определяется требованиями к задаче, в большинстве случаев предлагается брать соотношение один к двум.
-    # Размер у всех карт сверхточного слоя – одинаковы и вычисляются по формуле
-    #        w = mW - kW + 1        h = mH - kH + 1
-    # mW - ширина предыдущей карты
-    # mH - высота предыдущей карты
-    # kW - ширина ядра
-    # kH - высота ядра
-    # Размер ядра обычно берут в пределах от 3х3 до 7х7
-    # Изначально значения каждой карты сверхточного слоя равны 0.
-    # Значения весов ядер задаются случайным образом в области от -0.5 до 0.5.
-    #################
-    # Ядро скользит по предыдущей карте и производит операцию свертка, формула:
-    #
-    # rolledUpLayer[w,h]=sum(picture[pictureW-nucleusW,pictureH-nucleusH]*nucleus[nucleusW,nucleusH])
-    #
-    #################
-    # В зависимости от метода обработки краев исходной матрицы результат может быть
-    # меньше исходного изображения (valid), такого же размера (same) или большего размера (full)
+def strideLayer(photo, scaleMAP, sizeArr=48, numberOfMap=1):
+    if photo.shape[1] > photo.shape[2]:  # вертикальная
+        step = round(photo.shape[2] / sizeArr)
+        extraStep = round(photo.shape[1] / sizeArr)
+    else:
+        step = round(photo.shape[1] / sizeArr)
+        extraStep = round(photo.shape[2] / sizeArr)
+    outputArr, sumMap = np.zeros((3*numberOfMap, sizeArr, sizeArr), 'int'), 0
+    for color in range(3*numberOfMap):
+        for n in range(0, sizeArr * step, step):
+            for h in range(0, sizeArr * extraStep, extraStep):
+                for i in range(scaleMAP.shape[1]):
+                    for j in range(scaleMAP.shape[2]):
+                        try: sumMap += scaleMAP[numberOfMap-1, i, j] * photo[color, n + i, h + j]
+                        except ValueError: continue
+                outputArr[color, int(n / step), int(h / extraStep)], sumMap = sumMap, 0
+    return outputArr
 
 
 def subsampleLayer():

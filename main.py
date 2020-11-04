@@ -8,8 +8,9 @@ import NeuralNetwork.NeuralTeaching as ML
 def trainingList(dirPath):
     for photoName in os.listdir(dirPath):
         photo = io.imread(f"./{dirPath}/{photoName}")
-        ML.compression(photo, 48, 48)
+        photo = ML.compression(photo, 144, 144)
         photo = ML.splitIntoThreeChannels(photo)
+        photo = ML.strideLayer(photo, scaleMAP)
         yield
 
 
