@@ -2,7 +2,6 @@ import numpy as np
 
 
 def compression(photo, heightOut, widthOut):
-
     heightRatio = round(photo.shape[0] / heightOut)
     widthRatio = round(photo.shape[1] / widthOut)
     outputPhoto = np.zeros((heightOut, widthOut, photo.shape[2]), 'uint8')
@@ -75,9 +74,16 @@ def neuralNetwork(photo, answer, inputWeights, outputWeights, speedLearn=0.01, n
     return inputWeights, outputWeights
 
 
-def activationFunction():
-    pass
-    # В качестве функции активации в скрытых и выходном слоях применяется гиперболический тангенс
+def activationFunction(x, func=1):
+    if func == 1:    # Сигмоида
+        return 1 / (1 + np.exp(-x))
+    elif func == 2:  # Гиперболический тангенс
+        return (np.exp(2 * x) - 1) / (np.exp(2 * x) + 1)
+    elif func == 3:  # ReLU
+        for i in range(x.shape[0]):
+            x[i] = 1 if x[i] > 0 else 0
+        return x
+    else: raise TypeError('There is no such function.')
 
 
 def backStrideLayer():
@@ -95,4 +101,3 @@ def backSubsampleLayer():
     # с измененными краевыми эффектами. Необходимо взять ядро сверхточной карты (следующего за под выборочным слоем)
     # повернуть его на 180 градусов и сделать обычную свертку по вычисленным ранее дельтам сверхточной карты,
     # но так чтобы окно сканирования выходило за пределы карты.
-
