@@ -1,49 +1,58 @@
-def compression():
-    pass
-    # Входные данные представляют из себя цветные изображения типа JPEG, размера 48х48 пикселей.
+import numpy as np
 
 
-def splitIntoThreeChannels():
-    pass
-    # Каждое изображение разбивается на 3 канала: красный, синий, зеленый.
-    # Таким образом получается 3 изображения размера 48х48 пикселей.
-    # Входные данные каждого конкретного значения пикселя нормализуются в диапазон от 0 до 1.
+def compression(photo, heightOut, widthOut):
+
+    heightRatio = round(photo.shape[0] / heightOut)
+    widthRatio = round(photo.shape[1] / widthOut)
+    outputPhoto = np.zeros((heightOut, widthOut, photo.shape[2]), 'uint8')
+    for color in range(photo.shape[2]):
+        for i in range(0, heightOut):
+            n = i * heightRatio
+            for j in range(0, widthOut):
+                h = j * widthRatio
+                try:
+                    outputPhoto[i, j, color] = np.sum(photo[n:n + heightRatio, h:h + widthRatio, color]) / (heightRatio * widthRatio)
+                except ValueError: continue
+    return outputPhoto
 
 
-def strideLayer():
-    pass
-    # Сверхточный слой представляет из себя набор карт, у каждой карты есть синаптическое ядро.
-    # Количество карт определяется требованиями к задаче, в большинстве случаев предлагается брать соотношение один к двум.
-    # Размер у всех карт сверхточного слоя – одинаковы и вычисляются по формуле
-    #        w = mW - kW + 1        h = mH - kH + 1
-    # mW - ширина предыдущей карты
-    # mH - высота предыдущей карты
-    # kW - ширина ядра
-    # kH - высота ядра
-    # Размер ядра обычно берут в пределах от 3х3 до 7х7
-    # Изначально значения каждой карты сверхточного слоя равны 0.
-    # Значения весов ядер задаются случайным образом в области от -0.5 до 0.5.
-    #################
-    # Ядро скользит по предыдущей карте и производит операцию свертка, формула:
-    #
-    # rolledUpLayer[w,h]=sum(picture[pictureW-nucleusW,pictureH-nucleusH]*nucleus[nucleusW,nucleusH])
-    #
-    #################
-    # В зависимости от метода обработки краев исходной матрицы результат может быть
-    # меньше исходного изображения (valid), такого же размера (same) или большего размера (full)
+def splitIntoThreeChannels(photo):
+    if photo.shape[2] > 2:
+        return np.array([photo[:, :, 0] / 255, photo[:, :, 1] / 255, photo[:, :, 2] / 255])
+    else:
+        return np.array([photo[:, :, 0] / 255, photo[:, :, 0] / 255, photo[:, :, 0] / 255])
 
 
-def subsampleLayer():
-    pass
-    # Под выборочный слой также, как и сверхточный имеет карты, но их количество совпадает с предыдущим (сверхточным) слоем.
-    # Цель слоя – уменьшение размерности карт предыдущего слоя.
-    # В процессе сканирования ядром под выборочного слоя карты предыдущего слоя,
-    # сканирующее ядро не пересекается в отличие от сверхточного слоя.
-    # Обычно, каждая карта имеет ядро размером 2x2, что позволяет уменьшить предыдущие карты сверхточного слоя в 2 раза.
-    # Вся карта признаков разделяется на ячейки 2х2 элемента, из которых выбираются максимальные по значению.
-    # В под выборочном слое применяется функция активации MaxPooling – выбор максимального.
-    #
-    # compactLayer[w,h]=localMax(rolledUpLayer)
+def strideLayer(photo, scaleMAP, sizeArr=48, numberOfMap=1):
+    if scaleMAP.shape[0] < photo.shape[0]*numberOfMap:
+        raise TypeError('Invalid input parameter values!!!')
+    if photo.shape[1] > photo.shape[2]:  # вертикальная
+        step = round(photo.shape[2] / sizeArr)
+        extraStep = round(photo.shape[1] / sizeArr)
+    else:
+        step = round(photo.shape[1] / sizeArr)
+        extraStep = round(photo.shape[2] / sizeArr)
+    outputArr, sumMap, col = np.zeros((photo.shape[0]*numberOfMap, sizeArr, sizeArr), 'int'), 0, 0
+    for color in range(photo.shape[0]*numberOfMap):
+        for n in range(0, sizeArr * step, step):
+            for h in range(0, sizeArr * extraStep, extraStep):
+                for i in range(scaleMAP.shape[1]):
+                    for j in range(scaleMAP.shape[2]):
+                        try: sumMap += scaleMAP[color, i, j] * \
+                                       photo[int(color / ((photo.shape[0]*numberOfMap) / 3)), n + i, h + j]
+                        except ValueError: continue
+                outputArr[color, int(n / step), int(h / extraStep)], sumMap = sumMap, 0
+    return outputArr
+
+
+def subsampleLayer(photo, factor=2):
+    outputArr = np.zeros((photo.shape[0], int(photo.shape[1] / factor), int(photo.shape[1] / factor)), 'int')
+    for color in range(photo.shape[0]):
+        for n in range(0, photo.shape[1], factor):
+            for h in range(0, photo.shape[2], factor):
+                outputArr[color, int(n / factor), int(h / factor)] = np.amax(photo[color, n:n + factor, h:h + factor])
+    return outputArr
 
 
 def neuralNetwork():
