@@ -16,6 +16,7 @@ def trainingList(dirPath):
         photo = ML.strideLayer(photo, scaleMAP, sizeArr=22, numberOfMap=2)
         photo = ML.subsampleLayer(photo)
         photo = ML.strideLayer(photo, scaleMAP, sizeArr=8)
+        inputWeights, outputWeights = ML.neuralNetwork(photo, answer, inputWeights, outputWeights)
         yield
 
 

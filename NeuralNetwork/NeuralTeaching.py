@@ -55,9 +55,24 @@ def subsampleLayer(photo, factor=2):
     return outputArr
 
 
-def neuralNetwork():
-    pass
-    # Цель слоя – классификация, моделирует сложную нелинейную функцию
+def neuralNetwork(photo, answer, inputWeights, outputWeights, speedLearn=0.01, numberOfEntities=14):
+    trueInput = photo.reshape(photo.shape[0]*photo.shape[1]*photo.shape[2])
+    trueOutput = np.zeros(numberOfEntities) + 0.01
+    trueOutput[answer] = 0.99
+    ###########################################################
+    trueInputTp = np.array(trueInput, ndmin=2).T  # Транспонированная картнка
+    trueOutputTp = np.array(trueOutput, ndmin=2).T  # Транспонированные ответы
+    inMatrix = np.dot(inputWeights, trueInputTp)  # Входной сигнал * веса
+    inFinale = activationFunction(inMatrix)  # Выходной результат функции входных сигналов
+    outMatrix = np.dot(outputWeights, inFinale)  # Выходной сигнал * веса
+    outFinale = activationFunction(outMatrix)  # Выходной результат функции выходных сигналов
+    del inMatrix, outMatrix
+    error = trueOutputTp - outFinale  # Ошибка выходных данных
+    hiddenError = np.dot(outputWeights.T, error)
+    ###########################################################
+    inputWeights += speedLearn * np.dot((hiddenError * inFinale * (1 - inFinale)), np.transpose(trueInputTp))
+    outputWeights += speedLearn * np.dot((error * outFinale * (1 - outFinale)), np.transpose(inFinale))
+    return inputWeights, outputWeights
 
 
 def activationFunction():
