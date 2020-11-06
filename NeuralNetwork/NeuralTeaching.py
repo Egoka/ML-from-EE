@@ -32,21 +32,21 @@ def strideLayer(photo, scaleMAP, sizeArr=48, numberOfMap=1):
     else:
         step = round(photo.shape[1] / sizeArr)
         extraStep = round(photo.shape[2] / sizeArr)
-    outputArr, sumMap, col = np.zeros((photo.shape[0]*numberOfMap, sizeArr, sizeArr), 'int'), 0, 0
+    outputArr, sumMap, col = np.zeros((photo.shape[0]*numberOfMap, sizeArr, sizeArr), 'float'), 0, 0
     for color in range(photo.shape[0]*numberOfMap):
         for n in range(0, sizeArr * step, step):
             for h in range(0, sizeArr * extraStep, extraStep):
                 for i in range(scaleMAP.shape[1]):
                     for j in range(scaleMAP.shape[2]):
                         try: sumMap += scaleMAP[color, i, j] * \
-                                       photo[int(color / ((photo.shape[0]*numberOfMap) / 3)), n + i, h + j]
+                                       photo[int(color / numberOfMap), n + i, h + j]
                         except ValueError: continue
                 outputArr[color, int(n / step), int(h / extraStep)], sumMap = sumMap, 0
     return outputArr
 
 
 def subsampleLayer(photo, factor=2):
-    outputArr = np.zeros((photo.shape[0], int(photo.shape[1] / factor), int(photo.shape[1] / factor)), 'int')
+    outputArr = np.zeros((photo.shape[0], int(photo.shape[1] / factor), int(photo.shape[1] / factor)), 'float')
     for color in range(photo.shape[0]):
         for n in range(0, photo.shape[1], factor):
             for h in range(0, photo.shape[2], factor):
